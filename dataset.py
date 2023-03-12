@@ -4,11 +4,17 @@ from torch.utils.data import Dataset
 import os
 from PIL import Image
 import pandas as pd
+from torch.utils.data import DataLoader
+from pyvi import ViTokenizer
+from torchvision import transforms
+import json
+from .utils.utils import get_transforms
 
-class ProcessData(object):
+class TextProcessing(object):
     def __init__(self, tokenizer, max_seq_len=256):
         self.max_seq_len = max_seq_len
         self.tokenizer = tokenizer
+        self.word_segmenter = ViTokenizer
 
     def process_data(self, text):
         # Setting based on the current model type
@@ -23,7 +29,7 @@ class ProcessData(object):
         mask_padding_with_zero=True
         
         
-        # Tokenize word by word (for NER)
+        # Tokenize word by word
         tokens = []
         for word in text.split():
             word_tokens = self.tokenizer.tokenize(word)
@@ -63,35 +69,30 @@ class ProcessData(object):
         attention_mask = torch.tensor([attention_mask], dtype=torch.long)
         return input_ids, attention_mask, token_type_ids, tokens
 
-
-class EncodeLabel(object):
-    def __init__(self, question_id):
-        self.question_id = question_id
-    
-    def encode(self, label):
-        return torch.tensor([1])
-
-class VQA_Dataset(Dataset):
-    def __init__(self, df, tokenizer, question_type, max_len=256, image_dir=None, transform=None):
-        self.question_type = question_type
-        self.df = df[df['type']==self.question_id]
-        self.tokenizer = tokenizer
+class ViVQA_Dataset(Dataset):
+    def __init__(self, df_path, label_dict_path, tokenizer, max_len=256, image_dir=None, transform=None):
+        self.df = pd.read_csv(df_path)
         self.max_len = max_len
-        self.processor = ProcessData(self.tokenizer, self.max_len)
-        self.label_encoder = EncodeLabel()
+        self.tokenizer = tokenizer
+        self.processor = TextProcessing(self.tokenizer, self.max_len)
         self.image_dir = image_dir
         self.transform = transform
 
+        with open(label_dict_path, 'r') as fp:
+            self.label_dict = json.load(fp)
+
     def __len__(self):
-        return len(self.data)
+        return len(self.df)
 
     def __getitem__(self, idx):
+
+        question = self.df.iloc[idx]['question']
+        image_id = self.df.iloc[idx]['img_id']
+        answer = self.df.iloc[idx]['answer']
+        label = self.label_dict[answer]
+
         # process text data
-        question = self.data[idx]['question']
-        image_id = self.data[idx]['img_id']
-        answer = self.data[idx]['answer']
         input_ids, attention_mask, _, _ = self.processor.process_data(question)
-        encode_label = self.label_encoder.encode(answer)
 
         # process image data
         image_path = os.path.join(self.image_dir, "COCO_"+"0"*(12-len(str(image_id)))+str(image_id)+".jpg")
@@ -100,12 +101,43 @@ class VQA_Dataset(Dataset):
             image_tensor = self.transform(image_tensor)
         else:
             image_tensor = torch.tensor(image_tensor).type(torch.long)
+        label = torch.unsqueeze(torch.tensor(label).type(torch.long),-1)
         return {
             "input_ids": input_ids,
             "attention_mask": attention_mask,
-            "encode_label": encode_label,
             "image_tensor": image_tensor,
+            "label": label
         }
+
+def get_dataloader(df_path, label_dict_path, tokenizer, max_len=256, image_dir=None, transform=None, batch_size=8, shuffle=True):
+    dataset = ViVQA_Dataset(df_path, label_dict_path, tokenizer, max_len, image_dir, transform)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
+    return dataloader
+
+
+if __name__=="__main__":
+    img_transforms = transforms.Compose([
+        transforms.Resize((224,224)), 
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ])
+
+    tokenizer = AutoTokenizer.from_pretrained('vinai/phobert-base')
+    test_dataset = ViVQA_Dataset(
+        df_path = 'data/test.csv', 
+        label_dict_path = 'data/label_dict.json',
+        tokenizer = tokenizer,
+        max_len=256,
+        image_dir="../viq_images",
+        transform=img_transforms
+    )
+    dataloader = DataLoader(test_dataset, batch_size=4, shuffle=True)
+    for i, batch in enumerate(dataloader):
+        print(batch['input_ids'].shape)
+        print(batch['attention_mask'].shape)
+        print(batch['image_tensor'].shape)
+        print(batch['label'].shape)
+        break
 
 
 

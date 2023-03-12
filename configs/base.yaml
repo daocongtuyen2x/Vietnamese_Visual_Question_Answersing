@@ -1,0 +1,65 @@
+name: 'vietnamese-vqa'
+gpu_id: "0"
+seed: 50
+fp16: false
+mode_test: False
+multi_gpu: True
+exp_dir: 'exp'
+
+data_params:
+    train_csv_path : 'data/train.csv'
+    test_csv_path : 'data/test.csv'
+    label_dict_path : 'data/label_dict.json'
+    image_dir : '../viq_images'
+
+model_params:
+    model_pretrained:
+        language_encoder:
+            pretrained_model: 'vinai/phobert-base'
+            hidden_size: 768
+        image_encoder:
+            pretrained_model: 'vit_base_patch16_384'
+            hidden_size: 768
+    num_classes: 353
+    pretrained: false
+    pretrained_file: ''
+    drop_rate: 0.3
+    network: 'baseline' # [vit-phobert-merged]
+    
+train_params:
+    log: './log_all'
+    summary_path: './'
+    phase: 'train'
+    input_shape: [224, 224]
+    train_batch_size: 8
+    infer_batch_size: 2
+    initial_epoch: 0
+    n_epochs: 50
+    num_workers_to_cache: 8
+    num_workers_from_cache: 2
+
+optimizer:
+    type: 'adam'
+    args: 
+        lr: 0.0001
+        betas: (0.02, 0.08, 0.01)
+        weight_decay: 0.003
+        weight_decay: 0.01
+        weight_decay_bias: 0.0
+
+scheduler:
+    type: 'multistep'
+    args:
+        mode: 'poly'
+        warmup_length: 0
+        warmup_epochs: 10
+        milestones: [500, 750]
+        
+# loss: ['DiceLoss', 'ELDiceLoss', 'WCELoss', 'JaccardLoss', 'SSLoss', 'TverskyLoss', 'HybridLoss', 'BCELoss', 'SemiLoss']
+
+loss: 
+    type: 'BCELoss'
+    penalty: None
+    args:
+        alpha: 0.33
+        l2_factor: 0.01

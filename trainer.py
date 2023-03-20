@@ -10,38 +10,35 @@ from torch.nn.utils import clip_grad_norm_
 from utils.optimizer import build_optim
 from utils.scheduler import build_scheduler
 import gc
-from model import VQA
+from model import ViVQANet
 
 class Trainer:
 
-    def __init__(self, cfg, train_loader=None, test_loader=None, device='cpu'):
-        model = VQA(cfg)
+    def __init__(self, cfg, device='cpu'):
+        model = ViVQANet(cfg)
         self.model = model.to(device)
         self.device = device
         self.cfg = cfg
         # self.logger = logger
         # self.writer = writer
-        self.train_loader = train_loader
-        self.test_loader = test_loader
         self.optimizer = build_optim(cfg['optimizer'], self.model)
-        self.scheduler = build_scheduler(cfg['scheduler'], self.optimizer)
+        self.scheduler = build_scheduler(cfg, self.optimizer)
         self.criterion = torch.nn.CrossEntropyLoss()
 
         
-    def train(self, epoch):
+    def train(self, epoch, dataloader):
         start_time = time.time()
         self.model.train()
         mean_loss = []
         mean_acc = []
-        tbar = progress_bar(self.train_loader)
-        for step, batch in enumerate(tbar):
-            img = batch['image_tensor'].to(self.device)
-            input_ids = batch['input_ids'].to(self.device)
-            attention_mask = batch['attention_mask'].to(self.device)
+        for step, batch in tqdm(enumerate(dataloader)):
+            # img = batch['image_tensor'].to(self.device)
+            # input_ids = batch['input_ids'].to(self.device)
+            # attention_mask = batch['attention_mask'].to(self.device)
             label = batch['label'].to(self.device)
             self.optimizer.zero_grad()
             with autocast():
-                logits = self.model(img, input_ids, attention_mask)
+                logits = self.model(batch)
                 loss = self.criterion(logits, label)
             loss.backward()
             self.optimizer.step()
@@ -50,7 +47,7 @@ class Trainer:
             acc = (logits.argmax(1) == label).float().mean()
             mean_loss.append(loss.item())
             mean_acc.append(acc.item())
-            tbar.set_description(f'Epoch {epoch} | Loss: {loss.item():.4f} | Acc: {acc.item():.4f}')
+            # tbar.set_description(f'Epoch {epoch} | Loss: {loss.item():.4f} | Acc: {acc.item():.4f}')
         torch.cuda.empty_cache()
         gc.collect()
         self.logger.info(f'Epoch {epoch} | Loss: {np.mean(mean_loss):.4f} | Acc: {np.mean(mean_acc):.4f} | Time: {time.time() - start_time:.2f}s')
@@ -58,24 +55,24 @@ class Trainer:
         del loss, logits, img, input_ids, attention_mask, label
         return np.mean(mean_loss), np.mean(mean_acc)
     @torch.no_grad()
-    def test(self, epoch):
+    def test(self, epoch, dataloader):
         start_time = time.time()
         self.model.eval()
         mean_loss = []
         mean_acc = []
-        tbar = progress_bar(self.test_loader)
+        # tbar = progress_bar(dataloader)
         with torch.no_grad():
-            for step, batch in enumerate(tbar):
-                img = batch['image_tensor'].to(self.device)
-                input_ids = batch['input_ids'].to(self.device)
-                attention_mask = batch['attention_mask'].to(self.device)
+            for step, batch in tqdm(enumerate(dataloader)):
+                # img = batch['image_tensor'].to(self.device)
+                # input_ids = batch['input_ids'].to(self.device)
+                # attention_mask = batch['attention_mask'].to(self.device)
                 label = batch['label'].to(self.device)
-                logits = self.model(img, input_ids, attention_mask)
+                logits = self.model(batch)
                 loss = self.criterion(logits, label)
                 acc = (logits.argmax(1) == label).float().mean()
                 mean_loss.append(loss.item())
                 mean_acc.append(acc.item())
-                tbar.set_description(f'Epoch {epoch} | Loss: {loss.item():.4f} | Acc: {acc.item():.4f}')
+                # tbar.set_description(f'Epoch {epoch} | Loss: {loss.item():.4f} | Acc: {acc.item():.4f}')
         torch.cuda.empty_cache()
         gc.collect()
         self.logger.info(f'Epoch {epoch} | Loss: {np.mean(mean_loss):.4f} | Acc: {np.mean(mean_acc):.4f} | Time: {time.time() - start_time:.2f}s')
@@ -99,8 +96,3 @@ class Trainer:
         
         print(f"{'='*5} Load checkpoint at epoch {start_epoch} with Dice global {best_metric} {'='*5}")
         return model, start_epoch, best_metric
-
-        
-
-
-

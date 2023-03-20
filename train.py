@@ -6,12 +6,14 @@ import numpy as np
 import argparse
 import torch
 from torchvision import transforms
+from dataset import get_dataloader
 
 from trainer import Trainer
+from transformers import AutoModel, AutoTokenizer
 
 if __name__=="__main__":
     args = argparse.ArgumentParser(description='Main file')
-    args.add_argument('--config', default='./configs/base.yaml', type=str,
+    args.add_argument('--config', default='./configs/base.yml', type=str,
                       help='config file path (default: None)')
     # 1. Read experiment configurations
     cmd_args = args.parse_args()
@@ -20,7 +22,7 @@ if __name__=="__main__":
         cfg = yaml.load(file, Loader=yaml.FullLoader)
     # 2. Create experiment folder
     save_dir = f'experiments/{cfg["name"]}-{cfg["model_params"]["network"]}-{cfg["train_params"]["n_epochs"]}'
-    if os.path.exists(save_dir):
+    if not os.path.exists(save_dir):
         os.makedirs(save_dir, exist_ok=True)
     # 3. Save config file
     shutil.copy(nn_config_path, save_dir)
@@ -40,7 +42,7 @@ if __name__=="__main__":
         tokenizer, 
         max_len=40, 
         image_dir=cfg['data_params']['image_dir'], 
-        transform=transform, 
+        transform=img_transforms, 
         batch_size=cfg['train_params']['train_batch_size'], 
         shuffle=True
     )
@@ -50,12 +52,12 @@ if __name__=="__main__":
         tokenizer, 
         max_len=40, 
         image_dir=cfg['data_params']['image_dir'], 
-        transform=transform, 
+        transform=img_transforms, 
         batch_size=cfg['train_params']['train_batch_size'], 
         shuffle=True
     )
     # 4. Create trainer
-    trainer = Trainer(cfg, train_loader, test_loader, device)
+    trainer = Trainer(cfg, device)
     # 5. Train
     start_epoch = 1
     n_epochs = cfg['train_params']['n_epochs']

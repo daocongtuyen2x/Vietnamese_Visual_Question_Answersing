@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 from pyvi import ViTokenizer
 from torchvision import transforms
 import json
-from .utils.utils import get_transforms
+# from .utils.utils import get_transforms
 
 class TextProcessing(object):
     def __init__(self, tokenizer, max_seq_len=256):
@@ -101,7 +101,7 @@ class ViVQA_Dataset(Dataset):
             image_tensor = self.transform(image_tensor)
         else:
             image_tensor = torch.tensor(image_tensor).type(torch.long)
-        label = torch.unsqueeze(torch.tensor(label).type(torch.long),-1)
+        label = torch.tensor(label).type(torch.long)
         return {
             "input_ids": input_ids,
             "attention_mask": attention_mask,

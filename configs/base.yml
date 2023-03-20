@@ -39,7 +39,7 @@ train_params:
     summary_path: './'
     phase: 'train'
     input_shape: [224, 224]
-    train_batch_size: 8
+    train_batch_size: 4
     infer_batch_size: 2
     initial_epoch: 0
     n_epochs: 50

@@ -95,7 +95,7 @@ class _MultiStepLR(MultiStepLR):
             self.epoch += 1
         
             
-def build_scheduler(cfg, optimizer, iter_per_epoch, start_epoch):
+def build_scheduler(cfg, optimizer, iter_per_epoch=6400, start_epoch=1):
     if cfg['scheduler']['type'] == 'cyclical':
         scheduler = WarmupCyclicalLR(
             mode=cfg['scheduler']['args']['mode'], 

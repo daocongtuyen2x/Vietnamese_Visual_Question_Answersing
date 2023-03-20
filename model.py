@@ -1,8 +1,20 @@
 from transformers import AutoModel
 from transformers import RobertaConfig
-from bert_model import BertCrossLayer, BertAttention
-from clip_model import build_model
+from modules.bert_model import BertCrossLayer, BertAttention
+from modules.clip_model import build_model
 import torch
+import torch.nn as nn
+
+def init_weights(module):
+    if isinstance(module, (nn.Linear, nn.Embedding)):
+        module.weight.data.normal_(mean=0.0, std=0.02)
+    elif isinstance(module, nn.LayerNorm):
+        module.bias.data.zero_()
+        module.weight.data.fill_(1.0)
+
+    if isinstance(module, nn.Linear) and module.bias is not None:
+        module.bias.data.zero_()
+
 class Pooler(nn.Module):
     def __init__(self, hidden_size):
         super().__init__()

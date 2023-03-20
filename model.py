@@ -1,106 +1,110 @@
+from transformers import AutoModel
+from transformers import RobertaConfig
+from bert_model import BertCrossLayer, BertAttention
+from clip_model import build_model
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from transformers import AutoModel, AutoTokenizer
-from pyvi import ViTokenizer
-import timm
+class Pooler(nn.Module):
+    def __init__(self, hidden_size):
+        super().__init__()
+        self.dense = nn.Linear(hidden_size, hidden_size)
+        self.activation = nn.Tanh()
 
-# Language Encoder using phoBert model and get embedding of the question
-class LanguageEncoder(nn.Module):
-    def __init__(self, config):
-        super(LanguageEncoder, self).__init__()
-        self.config = config
-        self.tokenizer = AutoTokenizer.from_pretrained(config['pretrained_model'])
-        self.model = AutoModel.from_pretrained(config['pretrained_model'])
+    def forward(self, hidden_states):
+        first_token_tensor = hidden_states[:, 0]
+        pooled_output = self.dense(first_token_tensor)
+        pooled_output = self.activation(pooled_output)
+        return pooled_output
 
-    def forward(self, input_ids, attention_mask):
-        output = self.model(input_ids=input_ids, attention_mask=attention_mask)
-        return output
+# Co-attention module:
+class ViVQANet(nn.Module):
+    def __init__(self, cfg):
+        super().__init__()
+        self.text_emb_size = cfg['hidden_size']
+        self.image_emb_size = cfg['hidden_size']
+        self.hidden_size = cfg['hidden_size']
+        self.num_class = cfg['model_params']['num_class']
+        self.device = device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-# Image Encoder using Vision Transformer model and get embedding of the image
-class ImageEncoder(nn.Module):
-    def __init__(self, config):
-        super(ImageEncoder, self).__init__()
-        self.config = config
-        self.model = timm.create_model(config['pretrained_model'], pretrained=True)
+        self.bert_config = RobertaConfig(
+                vocab_size=cfg['model_params']['coattn']["vocab_size"],
+                hidden_size=cfg['model_params']["hidden_size"],
+                num_hidden_layers=cfg['model_params']['coattn']["num_layers"],
+                num_attention_heads=cfg['model_params']['coattn']["num_heads"],
+                intermediate_size=cfg['model_params']["hidden_size"] * cfg['model_params']['coattn']["mlp_ratio"],
+                max_position_embeddings=cfg['model_params']['coattn']["max_text_len"],
+                hidden_dropout_prob=cfg['model_params']['coattn']["drop_rate"],
+                attention_probs_dropout_prob=cfg['model_params']['coattn']["drop_rate"],
+            )
+        
+        # Load ViT and PhoBERT:
+        self.text_transformer = AutoModel.from_pretrained(cfg['model_params']['text_encoder']['pretrained_model'])
+        self.vit_model = build_model(cfg['model_params']['image_encoder']['vit'], resolution_after=224)
 
-    def forward(self, input_ids):
-        output = self.model(input_ids)
-        return output
+        # Coattention Module:
 
-# Coattention transformer using multimodal fusion modules: Coattention, Self-attention, and Cross-attention
-class Coattention(nn.Module):
-    def __init__(self, config):
-        super(Coattention, self).__init__()
-        self.config = config
-        self.coattention = nn.Linear(config['coattention_dim'], config['coattention_dim'])
-        self.self_attention = nn.Linear(config['coattention_dim'], config['coattention_dim'])
-        self.cross_attention = nn.Linear(config['coattention_dim'], config['coattention_dim'])
+        self.token_type_embeddings = nn.Embedding(2, cfg['hidden_size'])
+        self.token_type_embeddings.apply(init_weights)
 
-    def forward(self, language_output, image_output):
-        # Coattention
-        language_output = language_output[0]
-        image_output = image_output[0]
-        language_output = self.coattention(language_output)
-        image_output = self.coattention(image_output)
-        language_output = language_output.transpose(1, 2)
-        image_output = image_output.transpose(1, 2)
-        coattention_output = torch.bmm(language_output, image_output)
-        coattention_output = F.softmax(coattention_output, dim=2)
-        coattention_output = torch.bmm(image_output, coattention_output)
-        coattention_output = coattention_output.transpose(1, 2)
-        coattention_output = self.coattention(coattention_output)
-        coattention_output = coattention_output + language_output
-        # Self-attention
-        self_attention_output = self.self_attention(coattention_output)
-        self_attention_output = self_attention_output.transpose(1, 2)
-        self_attention_output = torch.bmm(self_attention_output, self_attention_output)
-        self_attention_output = F.softmax(self_attention_output, dim=2)
-        self_attention_output = torch.bmm(self_attention_output, coattention_output)
-        self_attention_output = self_attention_output.transpose(1, 2)
-        self_attention_output = self.self_attention(self_attention_output)
-        self_attention_output = self_attention_output + coattention_output
-        # Cross-attention
-        cross_attention_output = self.cross_attention(self_attention_output)
-        cross_attention_output = cross_attention_output.transpose(1, 2)
-        cross_attention_output = torch.bmm(cross_attention_output, image_output)
-        cross_attention_output = F.softmax(cross_attention_output, dim=2)
-        cross_attention_output = torch.bmm(cross_attention_output, image_output)
-        cross_attention_output = cross_attention_output.transpose(1, 2)
-        cross_attention_output = self.cross_attention(cross_attention_output)
-        cross_attention_output = cross_attention_output + self_attention_output
-        return cross_attention_output
+        self.cross_modal_text_transform = nn.Linear(self.text_emb_size, self.hidden_size)
+        self.cross_modal_text_transform.apply(init_weights)
+        self.cross_modal_image_transform = nn.Linear(self.image_emb_size, self.hidden_size)
+        self.cross_modal_image_transform.apply(init_weights)
 
-    
+        self.cross_modal_image_layers = nn.ModuleList([BertCrossLayer(self.bert_config) for _ in range(6)])
+        self.cross_modal_image_layers.apply(init_weights)
+        self.cross_modal_text_layers = nn.ModuleList([BertCrossLayer(self.bert_config) for _ in range(6)])
+        self.cross_modal_text_layers.apply(init_weights)
 
-# VQA model combine Language Encoder and Image Encoder using Coattention transformer
-class VQA(nn.Module):
-    def __init__(self, config):
-        super(VQA, self).__init__()
-        self.config = config
-        self.language_encoder = LanguageEncoder(config['language_encoder'])
-        self.image_encoder = ImageEncoder(config['image_encoder'])
-        self.coattention = Coattention(config['coattention'])
+        self.cross_modal_image_pooler = Pooler(self.hidden_size)
+        self.cross_modal_image_pooler.apply(init_weights)
+        self.cross_modal_text_pooler = Pooler(self.hidden_size)
+        self.cross_modal_text_pooler.apply(init_weights)
 
-    def forward(self, input_ids, attention_mask, image):
-        language_output = self.language_encoder(input_ids, attention_mask)
-        image_output = self.image_encoder(image)
-        output = self.coattention(language_output, image_output)
-        return output
+        # Init classifier:
+        self.vqa_classifier = nn.Sequential(
+                nn.Linear(self.hidden_size * 2, self.hidden_size * 2),
+                nn.LayerNorm(self.hidden_size * 2),
+                nn.GELU(),
+                nn.Linear(self.hidden_size * 2, self.num_class),
+            )
+        self.vqa_classifier.apply(init_weights)
+
+    def forward(self, batch):
+        text = torch.squeeze(batch['input_ids'], 1).to(self.device)
+        att_mask = torch.squeeze(batch['attention_mask'], 1).to(self.device)
+        image = batch['image_tensor'].to(self.device)
+        label = batch['label'].to(self.device)
 
 
+        input_shape = att_mask.size()
+        extend_text_masks = self.text_transformer.get_extended_attention_mask(att_mask, input_shape, self.device)
+        text_embeds = self.text_transformer(text, att_mask)[0]
+        text_embeds = self.cross_modal_text_transform(text_embeds)
 
-if __name__=="__main__":
-    config = {
-        'pretrained_model': 'vinai/phobert-base'
-    }
-    sentence = "Hôm nay trời đẹp quá"
-    sentence = ViTokenizer.tokenize(sentence)
-    model = LanguageEncoder(config)
-    input_ids = torch.tensor([model.tokenizer.encode(sentence, add_special_tokens=True)])
-    attention_mask = torch.tensor([[1]*len(input_ids[0])])
-    output = model(input_ids, attention_mask)
-    print(output)
-    print(output[0].shape)
-    print(output[1].shape)
-    
+        image_embeds = self.vit_model(image)
+        image_embeds = self.cross_modal_image_transform(image_embeds)
+        image_masks = torch.ones((image_embeds.size(0), image_embeds.size(1)), dtype=torch.long, device=self.device)
+        extend_image_masks = self.text_transformer.get_extended_attention_mask(image_masks, image_masks.size(), self.device)
+
+        # text_embeds, image_embeds = (
+        #     text_embeds + self.token_type_embeddings(torch.zeros_like(att_mask)),
+        #     image_embeds
+        #     + self.token_type_embeddings(
+        #         torch.full_like(torch.zeros_like(image_masks))
+        #     ),
+        # )
+
+        x, y = text_embeds, image_embeds
+        for text_layer, image_layer in zip(self.cross_modal_text_layers, self.cross_modal_image_layers):
+            x1 = text_layer(x, y, extend_text_masks, extend_image_masks)
+            y1 = image_layer(y, x, extend_image_masks, extend_text_masks)
+            x, y = x1[0], y1[0]
+
+        cls_feats_image = self.cross_modal_image_pooler(y)
+        # avg_image_feats = self.avgpool(image_feats.transpose(1, 2)).view(image_feats.size(0), 1, -1)
+        # cls_feats_image = self.cross_modal_image_pooler(avg_image_feats)
+        cls_feats_text = self.cross_modal_text_pooler(x)
+        cls_feats = torch.cat([cls_feats_text, cls_feats_image], dim=-1)
+
+        logits = self.vqa_classifier(cls_feats)
+        return logits

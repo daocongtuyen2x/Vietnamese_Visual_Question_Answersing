@@ -52,7 +52,7 @@ class Trainer:
         gc.collect()
         self.logger.info(f'Epoch {epoch} | Loss: {np.mean(mean_loss):.4f} | Acc: {np.mean(mean_acc):.4f} | Time: {time.time() - start_time:.2f}s')
         # self.writer.add_scalar('train/loss', np.mean(mean_loss), epoch)
-        del loss, logits, img, input_ids, attention_mask, label
+        del loss, logits, batch, label
         return np.mean(mean_loss), np.mean(mean_acc)
     @torch.no_grad()
     def test(self, epoch, dataloader):
@@ -77,7 +77,7 @@ class Trainer:
         gc.collect()
         self.logger.info(f'Epoch {epoch} | Loss: {np.mean(mean_loss):.4f} | Acc: {np.mean(mean_acc):.4f} | Time: {time.time() - start_time:.2f}s')
         # self.writer.add_scalar('test/loss', np.mean(mean_loss), epoch)
-        del loss, logits, img, input_ids, attention_mask, label
+        del loss, logits, batch, label
         return np.mean(mean_loss), np.mean(mean_acc)
 
     @staticmethod        

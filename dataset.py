@@ -95,8 +95,13 @@ class ViVQA_Dataset(Dataset):
         input_ids, attention_mask, _, _ = self.processor.process_data(question)
 
         # process image data
-        image_path = os.path.join(self.image_dir, "COCO_"+"0"*(12-len(str(image_id)))+str(image_id)+".jpg")
-        image_tensor = Image.open(image_path).convert("RGB")
+        try:
+            image_path = os.path.join(self.image_dir, "COCO_"+"0"*(12-len(str(image_id)))+str(image_id)+".jpg")
+            image_tensor = Image.open(image_path).convert("RGB")
+        except:
+            image_path = os.path.join('viq_images', "COCO_000000581929.jpg")
+            image_tensor = Image.open(image_path).convert("RGB")
+            
         if self.transform:
             image_tensor = self.transform(image_tensor)
         else:

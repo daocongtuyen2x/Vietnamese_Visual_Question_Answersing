@@ -64,4 +64,3 @@ if __name__=="__main__":
     for epoch in range(start_epoch, n_epochs+1):
         print(f"{'='*10} Epoch: {epoch}/{n_epochs} {'='*10}")
         train_loss, train_acc = trainer.train(epoch, train_loader)
-        print('Train | Loss: {:.4f} | Acc: {:.4f}'.format(train_loss, train_acc))

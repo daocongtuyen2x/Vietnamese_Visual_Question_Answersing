@@ -35,7 +35,7 @@ class ViVQANet(nn.Module):
         self.image_emb_size = cfg['hidden_size']
         self.hidden_size = cfg['hidden_size']
         self.num_class = cfg['model_params']['num_class']
-        self.device = device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         self.bert_config = RobertaConfig(
                 vocab_size=cfg['model_params']['coattn']["vocab_size"],
@@ -51,6 +51,11 @@ class ViVQANet(nn.Module):
         # Load ViT and PhoBERT:
         self.text_transformer = AutoModel.from_pretrained(cfg['model_params']['text_encoder']['pretrained_model'])
         self.vit_model = build_model(cfg['model_params']['image_encoder']['vit'], resolution_after=224)
+
+        # for param in self.text_transformer.parameters():
+        #     param.requires_grad = False
+        # for param in self.vit_model.parameters():
+        #     param.requires_grad = False
 
         # Coattention Module:
 
@@ -76,16 +81,22 @@ class ViVQANet(nn.Module):
         self.vqa_classifier = nn.Sequential(
                 nn.Linear(self.hidden_size * 2, self.hidden_size * 2),
                 nn.LayerNorm(self.hidden_size * 2),
-                nn.GELU(),
-                nn.Linear(self.hidden_size * 2, self.num_class),
+                nn.ReLU(),
+                nn.Dropout(0.2),
+                nn.Linear(self.hidden_size * 2, self.hidden_size),
+                nn.LayerNorm(self.hidden_size),
+                nn.ReLU(),
+                nn.Dropout(0.1),
+                nn.Linear(self.hidden_size, self.num_class),
             )
         self.vqa_classifier.apply(init_weights)
+
 
     def forward(self, batch):
         text = torch.squeeze(batch['input_ids'], 1).to(self.device)
         att_mask = torch.squeeze(batch['attention_mask'], 1).to(self.device)
         image = batch['image_tensor'].to(self.device)
-        label = batch['label'].to(self.device)
+        # label = batch['label'].to(self.device)
 
 
         input_shape = att_mask.size()

@@ -85,9 +85,9 @@ class WarmupCyclicalLR(object):
             optimizer.param_groups[i]['lr'] = lr
             
 class _MultiStepLR(MultiStepLR):
-    def __init__(self, optimizer, milestones=[30, 80], gamma=0.1, start_epoch=0):
+    def __init__(self, optimizer, milestones=[20, 40, 60, 80], gamma=0.1, start_epoch=0):
         self.epoch = start_epoch
-        super(_MultiStepLR, self).__init__(optimizer, milestones=[30, 80], gamma=0.1)
+        super(_MultiStepLR, self).__init__(optimizer, milestones=[20, 40, 60, 80], gamma=0.1)
         
     def __call__(self, optimizer, i, epoch):
         if epoch == self.epoch + 1:
@@ -95,7 +95,7 @@ class _MultiStepLR(MultiStepLR):
             self.epoch += 1
         
             
-def build_scheduler(cfg, optimizer, iter_per_epoch=6400, start_epoch=1):
+def build_scheduler(cfg, optimizer, iter_per_epoch=1500, start_epoch=0):
     if cfg['scheduler']['type'] == 'cyclical':
         scheduler = WarmupCyclicalLR(
             mode=cfg['scheduler']['args']['mode'], 

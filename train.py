@@ -14,7 +14,7 @@ from transformers import AutoModel, AutoTokenizer
 if __name__=="__main__":
     args = argparse.ArgumentParser(description='Main file')
     args.add_argument('--config', default='./configs/base.yml', type=str,
-                      help='config file path (default: None)')
+                      help='config file path (default: ./configs/base.yml)')
     # 1. Read experiment configurations
     cmd_args = args.parse_args()
     nn_config_path = cmd_args.config
@@ -31,7 +31,7 @@ if __name__=="__main__":
     img_transforms = transforms.Compose([
         transforms.Resize((224,224)), 
         transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
         ])
 
     tokenizer = AutoTokenizer.from_pretrained('vinai/phobert-base')
@@ -61,6 +61,13 @@ if __name__=="__main__":
     # 5. Train
     start_epoch = 1
     n_epochs = cfg['train_params']['n_epochs']
+    path = "weights/best_model.pth"
+    best_acc = 0.0
     for epoch in range(start_epoch, n_epochs+1):
         print(f"{'='*10} Epoch: {epoch}/{n_epochs} {'='*10}")
         train_loss, train_acc = trainer.train(epoch, train_loader)
+        test_loss, test_acc = trainer.test(epoch, test_loader)
+        if test_acc > best_acc:
+            best_acc = test_acc
+            torch.save(trainer.model.state_dict(), path)
+            print('save checkpoint successfully!')

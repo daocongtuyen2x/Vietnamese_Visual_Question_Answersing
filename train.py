@@ -10,6 +10,8 @@ from dataset import get_dataloader
 
 from trainer import Trainer
 from transformers import AutoModel, AutoTokenizer
+from utils.utils import init_logger
+from utils.transforms import clip_transform
 
 if __name__=="__main__":
     args = argparse.ArgumentParser(description='Main file')
@@ -28,11 +30,12 @@ if __name__=="__main__":
     shutil.copy(nn_config_path, save_dir)
     # 4. Load dataset
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    img_transforms = transforms.Compose([
-        transforms.Resize((224,224)), 
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
-        ])
+    # img_transforms = transforms.Compose([
+    #     transforms.Resize((224,224)), 
+    #     transforms.ToTensor(),
+    #     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+    #     ])
+    img_transforms = clip_transform(size=224)
 
     tokenizer = AutoTokenizer.from_pretrained('vinai/phobert-base')
 
@@ -57,7 +60,10 @@ if __name__=="__main__":
         shuffle=True
     )
     # 4. Create trainer
-    trainer = Trainer(cfg, device)
+
+    logger = init_logger()
+
+    trainer = Trainer(cfg, logger, device)
     # 5. Train
     start_epoch = 1
     n_epochs = cfg['train_params']['n_epochs']

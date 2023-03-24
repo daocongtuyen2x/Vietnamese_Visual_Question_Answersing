@@ -2,6 +2,9 @@ from PIL import Image
 from torchvision import transforms
 from torchvision.transforms import Compose, Resize, CenterCrop, ToTensor, Normalize
 import torch.nn as nn
+import logging
+import os
+
 
 def get_transforms():
     return Compose([
@@ -21,3 +24,21 @@ def init_weights(module):
 
     if isinstance(module, nn.Linear) and module.bias is not None:
         module.bias.data.zero_()
+
+
+def init_logger(log_file='logs/log.txt'):
+    logger = logging.getLogger()
+    
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    logger.setLevel(logging.INFO)
+
+    if not os.path.exists(log_file):
+        open(log_file, 'a')
+    
+    fhandler = logging.FileHandler(filename=log_file, mode='a')
+
+    fhandler.setFormatter(formatter)
+    fhandler.setLevel(logging.INFO)
+    logger.addHandler(fhandler)
+    logger.info(f"{'='*20} ViVQA {'='*20}")
+    return logger

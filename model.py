@@ -81,13 +81,9 @@ class ViVQANet(nn.Module):
         self.vqa_classifier = nn.Sequential(
                 nn.Linear(self.hidden_size * 2, self.hidden_size * 2),
                 nn.LayerNorm(self.hidden_size * 2),
-                nn.ReLU(),
-                nn.Dropout(0.2),
-                nn.Linear(self.hidden_size * 2, self.hidden_size),
-                nn.LayerNorm(self.hidden_size),
-                nn.ReLU(),
+                nn.GELU(),
                 nn.Dropout(0.1),
-                nn.Linear(self.hidden_size, self.num_class),
+                nn.Linear(self.hidden_size * 2, self.num_class)
             )
         self.vqa_classifier.apply(init_weights)
 

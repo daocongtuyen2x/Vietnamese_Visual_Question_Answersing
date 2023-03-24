@@ -14,12 +14,12 @@ from model import ViVQANet
 
 class Trainer:
 
-    def __init__(self, cfg, device='cpu'):
+    def __init__(self, cfg, logger, device='cpu'):
         model = ViVQANet(cfg)
         self.model = model.to(device)
         self.device = device
         self.cfg = cfg
-        # self.logger = logger
+        self.logger = logger
         # self.writer = writer
         self.optimizer = build_optim(cfg['optimizer'], self.model)
         self.scheduler = build_scheduler(cfg, self.optimizer)
@@ -50,6 +50,7 @@ class Trainer:
             # tbar.set_description(f'Epoch {epoch} | Loss: {loss.item():.4f} | Acc: {acc.item():.4f}')
         torch.cuda.empty_cache()
         gc.collect()
+        self.logger.info(f'Train: {epoch} | Loss: {np.mean(mean_loss):.4f} | Acc: {np.mean(mean_acc):.4f} | Time: {time.time() - start_time:.2f}s')
         print(f'Train: {epoch} | Loss: {np.mean(mean_loss):.4f} | Acc: {np.mean(mean_acc):.4f} | Time: {time.time() - start_time:.2f}s')
         # self.writer.add_scalar('train/loss', np.mean(mean_loss), epoch)
         del loss, logits, batch, label
@@ -75,7 +76,8 @@ class Trainer:
                 # tbar.set_description(f'Epoch {epoch} | Loss: {loss.item():.4f} | Acc: {acc.item():.4f}')
         torch.cuda.empty_cache()
         gc.collect()
-        print(f'Test: {epoch} | Loss: {np.mean(mean_loss):.4f} | Acc: {np.mean(mean_acc):.4f} | Time: {time.time() - start_time:.2f}s')
+        self.logger.info(f'Test: {epoch} | Loss: {np.mean(mean_loss):.4f} | Acc: {np.mean(mean_acc):.4f} | Time: {time.time() - start_time:.2f}s')
+        print(f'Train: {epoch} | Loss: {np.mean(mean_loss):.4f} | Acc: {np.mean(mean_acc):.4f} | Time: {time.time() - start_time:.2f}s')
         # self.writer.add_scalar('test/loss', np.mean(mean_loss), epoch)
         del loss, logits, batch, label
         return np.mean(mean_loss), np.mean(mean_acc)
@@ -95,4 +97,5 @@ class Trainer:
             start_epoch, best_metric = ckpt['epoch'], ckpt['best_metric']
         
         print(f"{'='*5} Load checkpoint at epoch {start_epoch} with Dice global {best_metric} {'='*5}")
+
         return model, start_epoch, best_metric

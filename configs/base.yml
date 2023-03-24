@@ -31,7 +31,7 @@ model_params:
     num_class: 353
     pretrained: False
     pretrained_file: ''
-    drop_rate: 0.3
+    drop_rate: 0.1
     network: 'baseline' # [vit-phobert-merged]
     
 train_params:
@@ -49,9 +49,9 @@ train_params:
 optimizer:
     type: 'adam'
     args: 
-        lr: 0.0001
+        lr: 0.00001
         betas: (0.02, 0.08, 0.01)
-        weight_decay: 0.003
+        weight_decay: 0.01
         weight_decay_bias: 0.0
 
 scheduler:
@@ -60,4 +60,4 @@ scheduler:
         mode: 'poly'
         warmup_length: 0
         warmup_epochs: 10
-        milestones: [20, 40, 60, 80]
+        milestones: [15, 30, 45]

@@ -2,7 +2,7 @@ from bisect import bisect_right
 import math
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.optim.lr_scheduler import _LRScheduler
-from torch.optim.lr_scheduler import MultiStepLR
+from torch.optim.lr_scheduler import MultiStepLR, ReduceLROnPlateau
 
 
 class WarmupMultiStepLR(_LRScheduler):
@@ -85,9 +85,9 @@ class WarmupCyclicalLR(object):
             optimizer.param_groups[i]['lr'] = lr
             
 class _MultiStepLR(MultiStepLR):
-    def __init__(self, optimizer, milestones=[20, 40, 60, 80], gamma=0.1, start_epoch=0):
+    def __init__(self, optimizer, milestones=[15, 30, 45], gamma=0.5, start_epoch=0):
         self.epoch = start_epoch
-        super(_MultiStepLR, self).__init__(optimizer, milestones=[20, 40, 60, 80], gamma=0.1)
+        super(_MultiStepLR, self).__init__(optimizer, milestones=[15, 30, 45], gamma=0.5)
         
     def __call__(self, optimizer, i, epoch):
         if epoch == self.epoch + 1:
@@ -117,9 +117,10 @@ def build_scheduler(cfg, optimizer, iter_per_epoch=1500, start_epoch=0):
             milestones=cfg['scheduler']['args']['milestones'],
             start_epoch=start_epoch
         )
+    elif cfg['scheduler']['type'] == 'plateau':
+        scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5, verbose=True, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08)
     else:
         scheduler = None
 #         scheduler = CosineAnnealingLR(optimizer, T_max, eta_min=0, last_epoch=- 1, verbose=False)
 
-        
     return scheduler

@@ -77,7 +77,7 @@ class Trainer:
         torch.cuda.empty_cache()
         gc.collect()
         self.logger.info(f'Test: {epoch} | Loss: {np.mean(mean_loss):.4f} | Acc: {np.mean(mean_acc):.4f} | Time: {time.time() - start_time:.2f}s')
-        print(f'Train: {epoch} | Loss: {np.mean(mean_loss):.4f} | Acc: {np.mean(mean_acc):.4f} | Time: {time.time() - start_time:.2f}s')
+        print(f'Test: {epoch} | Loss: {np.mean(mean_loss):.4f} | Acc: {np.mean(mean_acc):.4f} | Time: {time.time() - start_time:.2f}s')
         # self.writer.add_scalar('test/loss', np.mean(mean_loss), epoch)
         del loss, logits, batch, label
         return np.mean(mean_loss), np.mean(mean_acc)

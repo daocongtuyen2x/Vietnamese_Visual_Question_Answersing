@@ -39,7 +39,7 @@ train_params:
     summary_path: './'
     phase: 'train'
     input_shape: [224, 224]
-    train_batch_size: 8
+    train_batch_size: 64
     infer_batch_size: 2
     initial_epoch: 0
     n_epochs: 50
@@ -49,7 +49,7 @@ train_params:
 optimizer:
     type: 'adam'
     args: 
-        lr: 0.00001
+        lr: 0.0001
         betas: (0.02, 0.08, 0.01)
         weight_decay: 0.01
         weight_decay_bias: 0.0
@@ -60,4 +60,4 @@ scheduler:
         mode: 'poly'
         warmup_length: 0
         warmup_epochs: 10
-        milestones: [15, 30, 45]
+        milestones: [10, 20, 30, 40]

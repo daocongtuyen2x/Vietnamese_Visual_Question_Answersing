@@ -82,7 +82,7 @@ class ViVQANet(nn.Module):
                 nn.Linear(self.hidden_size * 2, self.hidden_size * 2),
                 nn.LayerNorm(self.hidden_size * 2),
                 nn.GELU(),
-                nn.Dropout(0.1),
+                nn.Dropout(0.2),
                 nn.Linear(self.hidden_size * 2, self.num_class)
             )
         self.vqa_classifier.apply(init_weights)

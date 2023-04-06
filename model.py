@@ -4,6 +4,7 @@ from modules.bert_model import BertCrossLayer, BertAttention
 from modules.clip_model import build_model
 import torch
 import torch.nn as nn
+from transformers import SwinModel, CvtModel, VanModel
 
 def init_weights(module):
     if isinstance(module, (nn.Linear, nn.Embedding)):
@@ -26,6 +27,26 @@ class Pooler(nn.Module):
         pooled_output = self.dense(first_token_tensor)
         pooled_output = self.activation(pooled_output)
         return pooled_output
+
+class Cvt(nn.Module):
+    def __init(self):
+        super().__init__()
+        self.cvt = CvtModel.from_pretrained('microsoft/cvt-13')
+        self.conv = torch.nn.Conv2d(in_channels=384, out_channels=768, kernel_size=3, stride=2)
+    def forward(self, x):
+        x = self.cvt(x).last_hidden_state
+        x = torch.swapaxes(self.conv(x).flatten(2), 1, 2)
+        return x
+
+class Van(nn.Module):
+    def __init(self):
+        super().__init__()
+        self.van = VanModel.from_pretrained("Visual-Attention-Network/van-base")
+        self.conv = torch.nn.Conv2d(in_channels=512, out_channels=768, kernel_size=1, stride=1)
+    def forward(self, x):
+        x = self.van(x).last_hidden_state
+        x = torch.swapaxes(self.conv(x).flatten(2), 1, 2)
+        return x
 
 # Co-attention module:
 class ViVQANet(nn.Module):
@@ -50,7 +71,7 @@ class ViVQANet(nn.Module):
         
         # Load ViT and PhoBERT:
         self.text_transformer = AutoModel.from_pretrained(cfg['model_params']['text_encoder']['pretrained_model'])
-        self.vit_model = build_model(cfg['model_params']['image_encoder']['vit'], resolution_after=224)
+        self.vit_model = load_image_model(cfg)
 
         # for param in self.text_transformer.parameters():
         #     param.requires_grad = False
@@ -86,7 +107,20 @@ class ViVQANet(nn.Module):
                 nn.Linear(self.hidden_size * 2, self.num_class)
             )
         self.vqa_classifier.apply(init_weights)
-
+    
+    def load_image_model(self, cfg):
+        if cfg['model_params']['image_encoder']['model']=='vit':
+            print('Training with image encoder: ViT')
+            return build_model(cfg['model_params']['image_encoder']['vit'], resolution_after=224)
+        elif cfg['model_params']['image_encoder']['model']=='twin':
+            print('Training with image encoder: Twin')
+            return SwinModel.from_pretrained("microsoft/swin-tiny-patch4-window7-224")
+        elif cfg['model_params']['image_encoder']['model']=='cvt':
+            print('Training with image encoder: CVT')
+            return Cvt()
+        else:
+            print('Training with image encoder: VAN')
+            return Van()
 
     def forward(self, batch):
         text = torch.squeeze(batch['input_ids'], 1).to(self.device)

@@ -17,6 +17,7 @@ model_params:
     text_encoder:
         pretrained_model: 'vinai/phobert-base'
     image_encoder:
+        model: 'vit' # ['vit', 'twin', 'van' ,'cvt']
         vit: 'ViT-B/32'
         patch_size: 32
     coattn:
@@ -60,4 +61,7 @@ scheduler:
         mode: 'poly'
         warmup_length: 0
         warmup_epochs: 10
-        milestones: [10, 20, 30, 40]
+        milestones: [15, 30, 45]
+
+inference:
+    weight_path: 'weights/best_model.pth'

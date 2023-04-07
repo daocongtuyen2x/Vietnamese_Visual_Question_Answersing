@@ -28,8 +28,16 @@ class Pooler(nn.Module):
         pooled_output = self.activation(pooled_output)
         return pooled_output
 
+class Swin(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.swin = SwinModel.from_pretrained("microsoft/swin-tiny-patch4-window7-224")
+    def forward(self, x):
+        x = self.swin(x).last_hidden_state
+        return x
+
 class Cvt(nn.Module):
-    def __init(self):
+    def __init__(self):
         super().__init__()
         self.cvt = CvtModel.from_pretrained('microsoft/cvt-13')
         self.conv = torch.nn.Conv2d(in_channels=384, out_channels=768, kernel_size=3, stride=2)
@@ -39,7 +47,7 @@ class Cvt(nn.Module):
         return x
 
 class Van(nn.Module):
-    def __init(self):
+    def __init__(self):
         super().__init__()
         self.van = VanModel.from_pretrained("Visual-Attention-Network/van-base")
         self.conv = torch.nn.Conv2d(in_channels=512, out_channels=768, kernel_size=1, stride=1)
@@ -71,7 +79,7 @@ class ViVQANet(nn.Module):
         
         # Load ViT and PhoBERT:
         self.text_transformer = AutoModel.from_pretrained(cfg['model_params']['text_encoder']['pretrained_model'])
-        self.vit_model = load_image_model(cfg)
+        self.vit_model = self.load_image_model(cfg)
 
         # for param in self.text_transformer.parameters():
         #     param.requires_grad = False
@@ -114,7 +122,7 @@ class ViVQANet(nn.Module):
             return build_model(cfg['model_params']['image_encoder']['vit'], resolution_after=224)
         elif cfg['model_params']['image_encoder']['model']=='twin':
             print('Training with image encoder: Twin')
-            return SwinModel.from_pretrained("microsoft/swin-tiny-patch4-window7-224")
+            return Swin()
         elif cfg['model_params']['image_encoder']['model']=='cvt':
             print('Training with image encoder: CVT')
             return Cvt()

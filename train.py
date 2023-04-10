@@ -67,7 +67,7 @@ if __name__=="__main__":
     # 5. Train
     start_epoch = 1
     n_epochs = cfg['train_params']['n_epochs']
-    path = "weights/best_model.pth"
+    path = os.path.join("weights", cfg['model_params']['image_encoder']['model'] + "_best_model.pth")
     best_acc = 0.0
     for epoch in range(start_epoch, n_epochs+1):
         print(f"{'='*10} Epoch: {epoch}/{n_epochs} {'='*10}")

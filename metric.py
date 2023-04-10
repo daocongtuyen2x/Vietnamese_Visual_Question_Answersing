@@ -8,7 +8,7 @@ from nltk.corpus import wordnet as wn
 with open('translateDict.pkl', 'rb') as f:
     translateDict = pickle.load(f)
 
-def wup_measure(a,b,similarity_threshold=0.925):
+def wup_measure(a,b,transDict,similarity_threshold=0.925):
     """
     Returns Wu-Palmer similarity score.
     More specifically, it computes:
@@ -71,5 +71,5 @@ def wup_measure(a,b,similarity_threshold=0.925):
 ###
 
 if __name__=="__main__":
-    print(wup_measure('màu đỏ', 'màu vàng', similarity_threshold=0.9))
+    print(wup_measure('màu đỏ', 'màu vàng', translateDict, similarity_threshold=0.9))
 

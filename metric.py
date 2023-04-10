@@ -15,8 +15,8 @@ def wup_measure(a,b,transDict,similarity_threshold=0.925):
         max_{x \in interp(a)} max_{y \in interp(b)} wup(x,y)
         where interp is a 'interpretation field'
     """
-    a = translateDict[a]
-    b = translateDict[b]
+    a = transDict[a]
+    b = transDict[b]
     def get_semantic_field(a):
         weight = 1.0
         semantic_field = wn.synsets(a,pos=wn.NOUN)

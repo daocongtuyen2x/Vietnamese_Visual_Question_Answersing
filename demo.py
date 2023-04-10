@@ -45,7 +45,7 @@ def callback(inference, test_select):
     if st.button('Predict'):
         # Display answer:
         prediction_state = st.text('Model predicting...')
-        st.write('Answer:', inference.inference(image, question))
+        st.write('Answer:', inference.predict(image, question))
         prediction_state = st.text('Model predicting...done')
 @st.cache_resource
 def load_model():

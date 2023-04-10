@@ -47,7 +47,7 @@ class Inference():
         }
         return batch
 
-    def inference(self, image, question):
+    def predict(self, image, question):
         batch = self.preprocess(image, question)
         with torch.no_grad():
             output = self.model(batch)
@@ -63,7 +63,8 @@ if __name__ == "__main__":
     question = "màu của xe buýt là gì"
     image = Image.open(image_path)
     inference = Inference(config_path)
-    output = inference.inference(image, question)
+    output = inference.predict(image, question)
     print('image_path:', image_path)
     print('question: ', question)
     print('answer: ', output)
+    

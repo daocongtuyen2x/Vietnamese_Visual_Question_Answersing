@@ -64,4 +64,4 @@ scheduler:
         milestones: [15, 30, 45]
 
 inference:
-    weight_path: '../weights/best_model.pth'
+    weight_path: '../weights/best_model_vit.pth'

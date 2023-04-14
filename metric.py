@@ -8,15 +8,15 @@ from nltk.corpus import wordnet as wn
 with open('translateDict.pkl', 'rb') as f:
     translateDict = pickle.load(f)
 
-def wup_measure(a,b,similarity_threshold=0.925):
+def wup_measure(a,b,transDict,similarity_threshold=0.925):
     """
     Returns Wu-Palmer similarity score.
     More specifically, it computes:
         max_{x \in interp(a)} max_{y \in interp(b)} wup(x,y)
         where interp is a 'interpretation field'
     """
-    a = translateDict[a]
-    b = translateDict[b]
+    a = transDict[a]
+    b = transDict[b]
     def get_semantic_field(a):
         weight = 1.0
         semantic_field = wn.synsets(a,pos=wn.NOUN)
@@ -71,5 +71,5 @@ def wup_measure(a,b,similarity_threshold=0.925):
 ###
 
 if __name__=="__main__":
-    print(wup_measure('màu đỏ', 'màu vàng', similarity_threshold=0.9))
+    print(wup_measure('màu đỏ', 'màu vàng', translateDict, similarity_threshold=0.9))
 

@@ -13,7 +13,7 @@ from tqdm import tqdm
 def test():
     config_path = "configs/base.yml"
     inference = Inference(config_path)
-    df = pd.read_csv('data/test.csv')[1417:]
+    df = pd.read_csv('data/test.csv')
     print('len df:', len(df))
     wups_00 = []
     wups_09 = []
@@ -30,6 +30,11 @@ def test():
         wups_09.append(wup_measure(answer, pred_answer, 0.9))
         if answer == pred_answer:
             true_count += 1
+        # print('question:', question)
+        # print('answer:', answer)
+        # print('pred_answer:', pred_answer)
+        # print('image_path:', image_path)
+        # print('------------------------------------------------')
     print('wup_00: ', sum(wups_00)/len(wups_00))
     print('wup_09: ', sum(wups_09)/len(wups_09))
     print('accuracy: ', true_count/len(df))

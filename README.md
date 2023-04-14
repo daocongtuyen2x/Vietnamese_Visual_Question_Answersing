@@ -1,14 +1,16 @@
 
 # Vietnamese Visual Question Answering
 
-Final Capstone Project - AIP491 - Spring2023 - FPT University.
+This is our Capstone Project (AIP491), which is carried out in Spring 2023 Semester at FPT University.
 
-
+**Overall view:** Although in English, there exist, foundation models that can be transferred and achieve excellent performance in downstream tasks for language or multimodal tasks, these in Vietnamese are of little interest. Through our research on adapting the most advanced models in processing each type of data, we found and pointed out that to have a breakthrough in this domain, similarly, there must be a large and long-term investment in building foundation models in Vietnamese,  to take that as a first step for building exciting applications. 
  
 
 
 ## Model Architecture
-In this project, we use image encoders such as [CLIP-ViT](https://github.com/zdou0830/METER), [Swin Transformer](https://github.com/microsoft/Swin-Transformer), [Visual Attention Network](https://github.com/Visual-Attention-Network/VAN-Classification), [CvT](https://github.com/microsoft/CvT) and use PhoBert as text encoder. Our best architecture can be visualized in the image below:
+In this project, we are concern in attention-based models which proved effective in filtering the most relevant information for decision-making, instead of using the entire distribution of images or language. Some advanced image encoders we have adapted and fine-tuned such as [Visual Attention Network](https://github.com/Visual-Attention-Network/VAN-Classification), [Swin Transformer](https://github.com/microsoft/Swin-Transformer), [CvT](https://github.com/microsoft/CvT) and [CLIP-ViT](https://github.com/zdou0830/METER), which were trained contrastively by [OpenAI](https://openai.com/) as a foundation for the multimodel task in English. Pretrained PhoBert was used as our text encoder. Fusion modules (including [co-attention module](https://arxiv.org/pdf/2111.11432.pdf) and [merge-attention module](https://arxiv.org/pdf/2111.11432.pdf) are also reasonably added during the data encoder process, facilitating the process of distilling important features for later decision-making.
+
+Our best-result architecture can be visualized in the image below:
 ![Model Architecture](images/model_architecture.jpeg)
 ## Dataset
 

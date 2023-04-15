@@ -14,7 +14,7 @@ Our proposed architecture is visualized in the image below:
 ![Model Architecture](images/model_architecture.jpeg)
 ## Dataset
 
-[ViVQA dataset](https://github.com/kh4nh12/ViVQA) is used as the benchmark for our experiments, it's translated and modified from the [COCO-QA dataset](https://www.cs.toronto.edu/~mren/research/imageqa/data/cocoqa/) in English.
+[ViVQA dataset](https://github.com/kh4nh12/ViVQA) is used as the benchmark for our experiments, it's translated and refined from part of [COCO-QA dataset](https://www.cs.toronto.edu/~mren/research/imageqa/data/cocoqa/).
 It consists of 10,328 images and 15,000 pairs of questions and answers in Vietnamese corresponding to the content of the images. We split the dataset randomly into training and test sets with a ratio of 8:2.
 
 A sample in ViVQA dataset:c

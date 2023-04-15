@@ -3,14 +3,14 @@
 
 This is our Capstone Project (AIP491), which is carried out in Spring 2023 Semester at FPT University.
 
-**Overall view:** Although in English, there exist, foundation models that can be transferred and achieve excellent performance in downstream tasks for language or multimodal tasks, these in Vietnamese are of little interest. Through our research on adapting the most advanced models in processing each type of data, we found and pointed out that to have a breakthrough in this domain, similarly, there must be a large and long-term investment in building foundation models in Vietnamese,  to take that as a first step for building exciting applications. 
+**Overall view:** Although in English, there exist [foundation models](https://arxiv.org/abs/2111.11432) that can be transferred and achieve excellent performance in downstream tasks for language or multimodal tasks, these in Vietnamese are of little interest. Through our research on adapting the most advanced models in processing each type of data, we found and pointed out that to have a breakthrough in this domain, similarly, there must be a large and long-term investment in building foundation models in Vietnamese,  to take that as a first step for building exciting applications. 
  
 
 
 ## Model Architecture
 In this project, we are concern in attention-based models which proved effective in filtering the most relevant information for decision-making, instead of using the entire distribution of images or language. Some advanced image encoders we have adapted and fine-tuned such as [Visual Attention Network](https://github.com/Visual-Attention-Network/VAN-Classification), [Swin Transformer](https://github.com/microsoft/Swin-Transformer), [CvT](https://github.com/microsoft/CvT) and [CLIP-ViT](https://github.com/zdou0830/METER), which were trained contrastively by [OpenAI](https://openai.com/) as a foundation for the multimodel task in English. Pretrained PhoBert was used as our text encoder. Fusion modules (including [co-attention module](https://arxiv.org/pdf/2111.11432.pdf) and [merge-attention module](https://arxiv.org/pdf/2111.11432.pdf) are also reasonably added during the data encoder process, facilitating the process of distilling important features for later decision-making.
 
-Our best-result architecture can be visualized in the image below:
+Our proposed architecture is visualized in the image below:
 ![Model Architecture](images/model_architecture.jpeg)
 ## Dataset
 
@@ -18,11 +18,11 @@ We use [ViVQA dataset](https://github.com/kh4nh12/ViVQA)
 
 ViVQA is a new dataset for evaluating Vietnamese VQA models. The ViVQA dataset consists of 10,328 images and 15,000 pairs of questions and answers in Vietnamese corresponding to the content of the images. We divide the dataset randomly into training and test sets with a ratio of 8:2.
 
-Sample in ViVQA dataset:
+A sample in ViVQA dataset:
 
 ![example](images/dataset.png)
 ## Experiments
-Our experiment results is included in above table:
+Our experiment results is shown in table below:
 Model | Acc | WUPS 0.9 | WUPS 0.0 |
 --- | --- | --- | --- |
 LSTM + W2V | 0.3228 | 0.4132 | 0.7389 |

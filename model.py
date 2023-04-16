@@ -4,7 +4,8 @@ from modules.bert_model import BertCrossLayer, BertAttention
 from modules.clip_model import build_model
 import torch
 import torch.nn as nn
-from transformers import SwinModel, CvtModel, VanModel
+from transformers import SwinModel, VanModel
+from CvT_v2 import load_cvt
 
 def init_weights(module):
     if isinstance(module, (nn.Linear, nn.Embedding)):
@@ -36,15 +37,15 @@ class Swin(nn.Module):
         x = self.swin(x).last_hidden_state
         return x
 
-class Cvt(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.cvt = CvtModel.from_pretrained('microsoft/cvt-13')
-        self.conv = torch.nn.Conv2d(in_channels=384, out_channels=768, kernel_size=3, stride=2)
-    def forward(self, x):
-        x = self.cvt(x).last_hidden_state
-        x = torch.swapaxes(self.conv(x).flatten(2), 1, 2)
-        return x
+# class Cvt(nn.Module):
+#     def __init__(self):
+#         super().__init__()
+#         self.cvt = CvtModel.from_pretrained('microsoft/cvt-13')
+#         self.conv = torch.nn.Conv2d(in_channels=384, out_channels=768, kernel_size=3, stride=2)
+#     def forward(self, x):
+#         x = self.cvt(x).last_hidden_state
+#         x = torch.swapaxes(self.conv(x).flatten(2), 1, 2)
+#         return x
 
 class Van(nn.Module):
     def __init__(self):
@@ -125,7 +126,7 @@ class ViVQANet(nn.Module):
             return Swin()
         elif cfg['model_params']['image_encoder']['model']=='cvt':
             print('Training with image encoder: CVT')
-            return Cvt()
+            return load_cvt()
         else:
             print('Training with image encoder: VAN')
             return Van()

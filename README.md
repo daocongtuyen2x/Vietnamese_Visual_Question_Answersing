@@ -12,7 +12,7 @@ In this project, we are concerned with attention-based models which proved effec
 
 Our proposed architecture is visualized in the image below:
 
-![Model Architecture](images/Proposed Methods 1.png)
+![Model Architecture](images/model_arc.png)
 
 ## Dataset
 

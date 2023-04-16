@@ -3,7 +3,7 @@
 
 This is our Capstone Project (AIP491), which is carried out in the Spring 2023 Semester at FPT University.
 
-**Overall view:** Although in English, there exist [foundation models](https://arxiv.org/abs/2111.11432) that can be transferred and achieve excellent performance in downstream tasks for language or multimodal tasks, these in Vietnamese are of little interest. Through our research on adapting the most advanced models for processing each type of data, we found and pointed out that to have a breakthrough in this domain, similarly, there must be a large and long-term investment in building foundation models in Vietnamese,  to take that as a first step for building exciting applications. 
+**Overall view:** Although in English, there exist [foundation models](https://arxiv.org/abs/2111.11432) that can be transferred and achieve excellent performance in downstream tasks for language or multimodal tasks, those in Vietnamese are of little interest. Through our research on adapting the most advanced models for processing each type of data, we found and pointed out that to have a breakthrough in this domain, similarly, there must be a large and long-term investment in building foundation models in Vietnamese,  to take that as a first step for building exciting applications. 
  
 
 

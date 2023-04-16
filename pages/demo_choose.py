@@ -77,7 +77,7 @@ def callback(inference, test_select):
     # Button predict:
     if st.button('Predict'):
         # Display answer:
-        with st.spinner('Loading model...'):
+        with st.spinner('Predicting...'):
             st.write('Answer:', inference.predict(image, question))
         st.success('Done!')
 @st.cache_resource

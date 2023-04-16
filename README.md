@@ -33,6 +33,7 @@ Bi-LSTM + FastText | 0.3348 | 0.4268 | 0.7542 |
 Bi-LSTM + ELMO | 0.3203 | 0.4247 | 0.7586 |
 Bi-LSTM + PhoW2Vec | 0.3397 | 0.4215 | 0.7616 |
 Co-attention + PhoW2Vec | 0.3496 | 0.4513 | 0.7786 |
+CvT + PhoBert | 0.3805 | 0.5382 | 0.7943 |
 Clip-Vit + PhoBert | 0.5227 | 0.5641 | 0.8308 |
 Pretrained CNN (Visual Attention Network) + PhoBert | 0.5979 | 0.6157 | 0.8623 |
 Swin Transformer + PhoBert | **0.6201** | **0.6814** | **0.8719** |

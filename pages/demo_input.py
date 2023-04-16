@@ -17,26 +17,26 @@ from inference import Inference
 st.set_page_config(page_title="Demo input question", page_icon="📈")
 
 image_dict = {
-    "test_01":"../viq_images/COCO_000000140100.jpg",
-    "test_02":"../viq_images/COCO_000000083151.jpg",
-    "test_03":"../viq_images/COCO_000000219254.jpg",
-    "test_04":"../viq_images/COCO_000000155376.jpg",
-    "test_05":"../viq_images/COCO_000000406030.jpg",
-    "test_06":"../viq_images/COCO_000000570801.jpg",
-    "test_07":"../viq_images/COCO_000000481465.jpg",
-    "test_08":"../viq_images/COCO_000000084609.jpg",
-    "test_09":"../viq_images/COCO_000000419980.jpg",
-    "test_10":"../viq_images/COCO_000000024247.jpg",
-    "test_11":"../viq_images/COCO_000000384476.jpg",
-    "test_12":"../viq_images/COCO_000000569379.jpg",
-    "test_13":"../viq_images/COCO_000000545007.jpg",
-    "test_14":"../viq_images/COCO_000000455974.jpg",
+    "test_01":"../viq_images/COCO_000000140100.jpg", # xe buýt
+    "test_02":"../viq_images/COCO_000000262201.jpg", # con chim
+    "test_03":"../viq_images/COCO_000000132646.jpg", # chai nhựa
+    "test_04":"../viq_images/COCO_000000262012.jpg", # chiếc ô
+    "test_05":"../viq_images/COCO_000000079971.jpg", # chiếc lá + hoa, màu xe máy: ../viq_images/COCO_000000476791.jpg
+    "test_06":"../viq_images/COCO_000000558555.jpg", # hộp
+    "test_07":"../viq_images/COCO_000000573759.jpg", # người đàn ông và 3 con chó đang trên chiếc thuyền
+    "test_08":"../viq_images/COCO_000000106315.jpg", # bát
+    "test_09":"../viq_images/COCO_000000098298.jpg", # nhà vệ sinh, phòng tắm
+    "test_10":"../viq_images/COCO_000000069346.jpg", # bánh pizza ở đâu
+    "test_11":"../viq_images/COCO_000000342682.jpg", # ngựa vằn
+    "test_12":"../viq_images/COCO_000000466456.jpg", # cô dâu và chú rể cắt bánh
+    "test_13":"../viq_images/COCO_000000341048.jpg", # gấu trúc
+    "test_14":"../viq_images/COCO_000000425475.jpg", # ly
     "test_15":"../viq_images/COCO_000000555705.jpg",
-    "test_16":"../viq_images/COCO_000000100579.jpg",
-    "test_17":"../viq_images/COCO_000000445906.jpg",
-    "test_18":"../viq_images/COCO_000000506640.jpg",
-    "test_19":"../viq_images/COCO_000000528432.jpg",
-    "test_20":"../viq_images/COCO_000000442069.jpg",
+    "test_16":"../viq_images/COCO_000000219723.jpg", # có bao nhiêu hộp chứa gà con 
+    "test_17":"../viq_images/COCO_000000238843.jpg", # có bao nhiêu con hươu cao cổ
+    "test_18":"../viq_images/COCO_000000271401.jpg", # có bao nhiêu chiếc máy bay
+    "test_19":"../viq_images/COCO_000000092729.jpg", # có bao nhiêu con mèo
+    "test_20":"../viq_images/COCO_000000571503.jpg", # có bao nhiêu máy bay
 }
 
 def callback(inference, test_select):

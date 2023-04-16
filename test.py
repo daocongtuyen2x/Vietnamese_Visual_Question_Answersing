@@ -13,7 +13,7 @@ from tqdm import tqdm
 def test():
     config_path = "configs/base.yml"
     inference = Inference(config_path)
-    df = pd.read_csv('data/test.csv')
+    df = pd.read_csv('data/test.csv')[2565:]
     print('len df:', len(df))
     wups_00 = []
     wups_09 = []
@@ -26,17 +26,17 @@ def test():
         image_path = os.path.join('../viq_images', "COCO_"+"0"*(12-len(str(image_id)))+str(image_id)+".jpg")
         image = Image.open(image_path)
         pred_answer = inference.predict(image, question)
-        wups_00.append(wup_measure(answer, pred_answer, 0.0))
-        wups_09.append(wup_measure(answer, pred_answer, 0.9))
+        # wups_00.append(wup_measure(answer, pred_answer, 0.0))
+        # wups_09.append(wup_measure(answer, pred_answer, 0.9))
         if answer == pred_answer:
             true_count += 1
-        # print('question:', question)
-        # print('answer:', answer)
-        # print('pred_answer:', pred_answer)
-        # print('image_path:', image_path)
-        # print('------------------------------------------------')
-    print('wup_00: ', sum(wups_00)/len(wups_00))
-    print('wup_09: ', sum(wups_09)/len(wups_09))
+        print('question:', question)
+        print('answer:', answer)
+        print('pred_answer:', pred_answer)
+        print('image_path:', image_path)
+        print('------------------------------------------------')
+    # print('wup_00: ', sum(wups_00)/len(wups_00))
+    # print('wup_09: ', sum(wups_09)/len(wups_09))
     print('accuracy: ', true_count/len(df))
 
 if __name__ == "__main__":
